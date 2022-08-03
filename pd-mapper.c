@@ -45,6 +45,7 @@
 #include "assoc.h"
 #include "json.h"
 #include "servreg_loc.h"
+#include "qmi_tlv.h"
 
 struct pd_map {
 	const char *service;
@@ -110,6 +111,9 @@ respond:
 		return;
 	}
 
+	printf("%s: sending response\n", __func__);
+	qmi_tlv_dump_buf(resp_buf.data, resp_buf.data_len);
+
 	ret = qrtr_sendto(sock, pkt->node, pkt->port,
 			  resp_buf.data, resp_buf.data_len);
 	if (ret < 0) {
@@ -136,6 +140,8 @@ static int pd_load_map(const char *file)
 	double number;
 	int count;
 	int ret;
+
+	printf("Parsing: %s\n", file);
 
 	root = json_parse_file(file);
 	if (!root)
@@ -184,6 +190,7 @@ static int pd_load_map(const char *file)
 		sprintf((char *)map->domain, "%s/%s/%s", soc, domain, subdomain);
 
 		map->instance = number;
+		printf("\tService: %s, domain: %s, instance: %d\n", map->service, map->domain, map->instance);
 	}
 
 	pd_maps[num_pd_maps].service = NULL;
@@ -365,7 +372,7 @@ int main(int argc, char **argv)
 			ret = qmi_decode_header(&pkt, &msg_id);
 			if (ret < 0)
 				continue;
-
+			qmi_tlv_dump_buf(pkt.data, pkt.data_len);
 			switch (msg_id) {
 			case SERVREG_LOC_GET_DOMAIN_LIST:
 				handle_get_domain_list(fd, &pkt);

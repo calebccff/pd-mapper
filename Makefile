@@ -10,7 +10,8 @@ servicedir := $(prefix)/lib/systemd/system
 SRCS := pd-mapper.c \
         assoc.c \
         json.c \
-	servreg_loc.c
+	servreg_loc.c \
+	qmi_tlv.c
 
 OBJS := $(SRCS:.c=.o)
 
